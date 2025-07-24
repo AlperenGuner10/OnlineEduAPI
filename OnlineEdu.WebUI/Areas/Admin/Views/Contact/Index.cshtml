@@ -1,0 +1,62 @@
+﻿@model List<ResultContactDto>
+@{
+    ViewData["Title"] = "İletişim Bilgileri";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+@{
+	int count = 0;
+}
+<table class="table table-hover">
+	<tr>
+		<th>#</th>
+		<th>Adres</th>
+		<th>Telefon</th>
+		<th>E-Mail</th>
+		<th>Harita Url</th>
+	</tr>
+	@foreach (var item in Model)
+	{
+		count++;
+		<tr>
+			<td>@count</td>
+			<td>@item.Address</td>
+			<td>@item.Phone</td>
+			<td>@item.Email</td>
+			<td>
+				<iframe src="@item.MapUrl" width="150" height="100" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+			</td>
+			<td>
+				<button onclick="deleteContact(@item.ContactId)" class="btn btn-outline-danger">Sil</button>
+
+				<a asp-action="UpdateContact" asp-controller="Contact" asp-area="Admin" asp-route-id="@item.ContactId" class="btn btn-outline-info">Güncelle</a>
+			</td>
+		</tr>
+	}
+</table>
+<br>
+
+<a asp-action="CreateContact" asp-controller="Contact" asp-area="Admin" class="btn btn-outline-primary">Yeni İletişim Bilgisini Ekle</a>
+
+
+<script>
+
+	function deleteContact(id){
+		Swal.fire({
+	  title: "Silmek İstediğinize Emin Misiniz?",
+	  text: "Bu İşlemi Geri Alamazsınız!",
+	  icon: "warning",
+	  showCancelButton: true,
+	  confirmButtonColor: "#3085d6",
+	  cancelButtonColor: "#d33",
+	  confirmButtonText: "Evet, Sil!",
+	  cancelButtonText: "İptal"
+	}).then((result) => {
+	  if (result.isConfirmed) {
+		window.location.href ="/Admin/Contact/DeleteContact/"+id;
+	  }
+	});
+	}
+
+</script>
+
