@@ -8,9 +8,9 @@ namespace OnlineEdu.API.Mapping
 	{
 		public BlogCategoryMapping()
 		{
-			CreateMap<CreateBlogCategoryDto, BlogCategory >();
-			CreateMap<UpdateBlogCategoryDto, BlogCategory >();
-			CreateMap<ResultBlogCategoryDto, BlogCategory >();
+			CreateMap<CreateBlogCategoryDto, BlogCategory >().ReverseMap();
+			CreateMap<UpdateBlogCategoryDto, BlogCategory >().ReverseMap();
+			CreateMap<ResultBlogCategoryDto, BlogCategory >().ReverseMap();
 		}
 	}
 }

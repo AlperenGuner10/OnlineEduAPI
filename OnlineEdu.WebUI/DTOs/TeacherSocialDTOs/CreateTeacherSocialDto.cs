@@ -1,5 +1,4 @@
-﻿using OnlineEdu.Entity.Entities;
-
+﻿
 namespace OnlineEdu.WebUI.DTOs.TeacherSocialDTOs
 {
 	public class CreateTeacherSocialDto

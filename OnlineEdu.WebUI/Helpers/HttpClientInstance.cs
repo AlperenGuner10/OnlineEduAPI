@@ -1,4 +1,7 @@
-﻿namespace OnlineEdu.WebUI.Helpers
+﻿using OnlineEdu.WebUI.Services.TokenServices;
+using System.Net.Http.Headers;
+namespace OnlineEdu.WebUI.Helpers
+
 {
 	public static class HttpClientInstance
 	{
@@ -6,7 +9,7 @@
 		{
 			HttpClient client = new HttpClient();
 
-			client.BaseAddress = new Uri("https://localhost:7236/api/");
+			client.BaseAddress = new Uri("https://localhost:7189/api/");
 
 			return client;
 		}

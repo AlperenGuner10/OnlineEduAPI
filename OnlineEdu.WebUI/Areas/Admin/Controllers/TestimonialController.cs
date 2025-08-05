@@ -9,16 +9,21 @@ namespace OnlineEdu.WebUI.Areas.Admin.Controllers
 	[Authorize(Roles ="Admin")]
 	public class TestimonialController : Controller
 	{
-		private readonly HttpClient _client = HttpClientInstance.CreateClient();
+		private readonly HttpClient _httpClient;
+
+		public TestimonialController(IHttpClientFactory clientFactory)
+		{
+			_httpClient=clientFactory.CreateClient("EduClient");
+		}
 		public async Task<IActionResult> Index()
 		{
-			var values = await _client.GetFromJsonAsync<List<ResultTestimonialDto>>("testimonials");
+			var values = await _httpClient.GetFromJsonAsync<List<ResultTestimonialDto>>("testimonials");
 			return View(values);
 		}
 
 		public async Task<IActionResult> DeleteTestimonial(int id)
 		{
-			await _client.DeleteAsync($"testimonials/{id}");
+			await _httpClient.DeleteAsync($"testimonials/{id}");
 			return RedirectToAction("Index");
 		}
 		[HttpGet]
@@ -29,19 +34,19 @@ namespace OnlineEdu.WebUI.Areas.Admin.Controllers
 		[HttpPost]
 		public async Task<IActionResult> CreateTestimonial(CreateTestimonialDto createTestimonialDTO)
 		{
-			await _client.PostAsJsonAsync("testimonials", createTestimonialDTO);
+			await _httpClient.PostAsJsonAsync("testimonials", createTestimonialDTO);
 			return RedirectToAction("Index");
 		}
 		[HttpGet]
 		public async Task<IActionResult> UpdateTestimonial(int id)
 		{
-			var values = await _client.GetFromJsonAsync<UpdateTestimonialDto>($"testimonials/{id}");
+			var values = await _httpClient.GetFromJsonAsync<UpdateTestimonialDto>($"testimonials/{id}");
 			return View(values);
 		}
 		[HttpPost]
 		public async Task<IActionResult> UpdateTestimonial(UpdateTestimonialDto updateTestimonialDTO)
 		{
-			await _client.PutAsJsonAsync("testimonials", updateTestimonialDTO);
+			await _httpClient.PutAsJsonAsync("testimonials", updateTestimonialDTO);
 			return RedirectToAction("Index");
 		}
 	}

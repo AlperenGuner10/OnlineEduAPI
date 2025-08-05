@@ -1,27 +1,26 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using OnlineEdu.Entity.Entities;
 using OnlineEdu.WebUI.DTOs.RoleDTOs;
-using OnlineEdu.WebUI.Services.RoleServices;
+using OnlineEdu.WebUI.Helpers;
 using System.Threading.Tasks;
 
 namespace OnlineEdu.WebUI.Areas.Admin.Controllers
 {
+	[Authorize(Roles = "Admin")]
 	[Area("Admin")]
-	[Route("[area]/[controller]/[action]/{id?}")]
 	public class RoleController : Controller
 	{
-		private readonly IRoleService _roleService;
+		private readonly HttpClient _httpClient;
 
-		public RoleController(IRoleService roleService)
+		public RoleController(IHttpClientFactory clientFactory)
 		{
-			_roleService=roleService;
+			_httpClient=clientFactory.CreateClient("EduClient");
 		}
 
 		public async Task<IActionResult> Index()
 		{
-			var values = await _roleService.GetAllRolesAsync();
+			var values = await _httpClient.GetFromJsonAsync<List<ResultRoleDto>>("roles");
 			return View(values);
 		}
 
@@ -32,12 +31,12 @@ namespace OnlineEdu.WebUI.Areas.Admin.Controllers
 		[HttpPost]
 		public async Task<IActionResult> CreateRole(CreateRoleDto createRoleDto)
 		{
-			await _roleService.CreateRoleAsync(createRoleDto);
+			await _httpClient.PostAsJsonAsync("roles", createRoleDto);
 			return RedirectToAction("Index");
-		} 
+		}
 		public async Task<IActionResult> DeleteRole(int id)
 		{
-			await _roleService.DeleteRoleAsync(id);
+			await _httpClient.DeleteAsync("roles/"+id);
 			return RedirectToAction("Index");
 		}
 	}

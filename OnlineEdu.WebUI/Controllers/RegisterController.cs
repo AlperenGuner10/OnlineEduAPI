@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using OnlineEdu.WebUI.DTOs.UserDTOs;
+using OnlineEdu.WebUI.Helpers;
 using OnlineEdu.WebUI.Services.UserServices;
 using System.Threading.Tasks;
 
@@ -7,13 +8,12 @@ namespace OnlineEdu.WebUI.Controllers
 {
 	public class RegisterController : Controller
 	{
-		private readonly IUserService _userService;
+		private readonly HttpClient _httpClient;
 
-		public RegisterController(IUserService userService)
+		public RegisterController(IHttpClientFactory clientFactory)
 		{
-			_userService=userService;
+			_httpClient=clientFactory.CreateClient("EduClient");
 		}
-
 		public IActionResult SignUp()
 		{
 			return View();
@@ -27,16 +27,17 @@ namespace OnlineEdu.WebUI.Controllers
 				return View(userRegisterDto);
 			}
 
-			var result = await _userService.CreateUserAsync(userRegisterDto);
-			if (!result.Succeeded)
+			var result = await _httpClient.PostAsJsonAsync("users/register",userRegisterDto);
+			if (!result.IsSuccessStatusCode)
 			{
-				foreach (var item in result.Errors)
+				var errors = await result.Content.ReadFromJsonAsync<List<RegisterResponseDto>>();
+				foreach (var item in errors)
 				{
 					ModelState.AddModelError("", item.Description);
 				}
 				return View(userRegisterDto);
 			}
-			return RedirectToAction("Index","Login");
+			return RedirectToAction("SignIn", "Login");
 		}
 	}
 }

@@ -7,7 +7,11 @@ namespace OnlineEdu.WebUI.ViewComponents.Blog
 {
 	public class _BlogRecentBlogs : ViewComponent
 	{
-		private readonly HttpClient _httpClient = HttpClientInstance.CreateClient();
+		private readonly HttpClient _httpClient;
+		public _BlogRecentBlogs(IHttpClientFactory clientFactory)
+		{
+			_httpClient=clientFactory.CreateClient("EduClient");
+		}
 		public async Task<IViewComponentResult> InvokeAsync()
 		{
 			var values = await _httpClient.GetFromJsonAsync<List<ResultBlogDto>>("blogs/GetLastFourBlogs");

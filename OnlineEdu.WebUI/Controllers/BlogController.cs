@@ -7,7 +7,12 @@ namespace OnlineEdu.WebUI.Controllers
 {
 	public class BlogController : Controller
 	{
-		private readonly HttpClient _httpClient = HttpClientInstance.CreateClient();
+		private readonly HttpClient _httpClient;
+
+		public BlogController(IHttpClientFactory clientFactory)
+		{
+			_httpClient=clientFactory.CreateClient("EduClient");
+		}
 		public IActionResult Index()
 		{
 			return View();
@@ -23,6 +28,14 @@ namespace OnlineEdu.WebUI.Controllers
 		{
 			var blog = await _httpClient.GetFromJsonAsync<ResultBlogDto>("blogs/"+id);
 			return View(blog);
+		}
+
+		public async Task<IActionResult> BlogsByCategory(int id)
+		{
+			var blogs = await _httpClient.GetFromJsonAsync<List<ResultBlogDto>>("blogs/GetBlogsByCategoryId/" +id);
+
+			ViewBag.categoryName = blogs.Select(x=>x.BlogCategory.Name).FirstOrDefault();
+			return View(blogs);
 		}
 	}
 }

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OnlineEdu.Business.Abstract;
 using OnlineEdu.DTO.DTOs.BannerDTOs;
@@ -6,10 +7,12 @@ using OnlineEdu.Entity.Entities;
 
 namespace OnlineEdu.API.Controllers
 {
+	[Authorize(Roles = "Admin")]
 	[Route("api/[controller]")]
 	[ApiController]
 	public class BannersController(IGenericService<Banner> _bannerService, IMapper _mapper) : ControllerBase
 	{
+		[AllowAnonymous]
 		[HttpGet]
 		public IActionResult Get()
 		{

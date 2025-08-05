@@ -1,19 +1,24 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
+using OnlineEdu.WebUI.DTOs.LoginDTOs;
 using OnlineEdu.WebUI.DTOs.UserDTOs;
+using OnlineEdu.WebUI.Helpers;
 using OnlineEdu.WebUI.Services.UserServices;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace OnlineEdu.WebUI.Controllers
 {
 	public class LoginController : Controller
 	{
-		private readonly IUserService _userService;
+		private readonly HttpClient _httpClient;
 
-		public LoginController(IUserService userService)
+		public LoginController(IHttpClientFactory clientFactory)
 		{
-			_userService=userService;
+			_httpClient=clientFactory.CreateClient("EduClient");
 		}
-
 		public IActionResult SignIn()
 		{
 			return View();
@@ -21,25 +26,39 @@ namespace OnlineEdu.WebUI.Controllers
 		[HttpPost]
 		public async Task<IActionResult> SignIn(UserLoginDto userLoginDto)
 		{
-			var userRole = await _userService.LoginAsync(userLoginDto);
+			var result = await _httpClient.PostAsJsonAsync("users/login", userLoginDto);
+			if (!result.IsSuccessStatusCode)
+			{
+				ModelState.AddModelError("", "Kullanıcı Adı veya Şifre Hatalı");
+				return View(userLoginDto);
+			}
 
-			if (userRole == "Admin")
+			var handler = new JwtSecurityTokenHandler();
+			var response = await result.Content.ReadFromJsonAsync<LoginResponseDto>();
+			var token = handler.ReadJwtToken(response.Token);
+			var claims = token.Claims.ToList();
+
+			if(response.Token !=null)
 			{
-				return RedirectToAction("Index", "About", new { area = "Admin" });
+				claims.Add(new Claim("Token", response.Token));
+				var claimIdentity = new ClaimsIdentity(claims, JwtBearerDefaults.AuthenticationScheme);
+
+				var authProps = new AuthenticationProperties
+				{
+					ExpiresUtc = response.ExpireDate,
+					IsPersistent = true
+				};
+				 await HttpContext.SignInAsync(JwtBearerDefaults.AuthenticationScheme,new ClaimsPrincipal(claimIdentity),authProps);
+
+				return RedirectToAction("Index", "Home");
 			}
-			if (userRole == "Teacher")
-			{
-				return RedirectToAction("Index", "MyCourse", new { area = "Teacher" });
-			}
-			if (userRole == "Student")
-			{
-				return RedirectToAction("Index", "CourseRegister", new { area = "Student" });
-			}
-			else
-			{
-				ModelState.AddModelError("", "E-Mail veya Şifre hatalı.");
-				return View();
-			}
+			ModelState.AddModelError("", "Kullanıcı Adı veya Şifre Hatalı");
+			return View(userLoginDto);
+		}
+		public async Task<IActionResult> LogOut()
+		{
+			await HttpContext.SignOutAsync();
+			return RedirectToAction("Index", "Home");
 		}
 	}
 }

@@ -1,17 +1,28 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using OnlineEdu.WebUI.DTOs.BlogCategoryDTOs;
 using OnlineEdu.WebUI.DTOs.BlogDTOs;
 using OnlineEdu.WebUI.Helpers;
+using OnlineEdu.WebUI.Services.TokenServices;
 using System.Threading.Tasks;
 
 namespace OnlineEdu.WebUI.Areas.Admin.Controllers
 {
+	[Authorize(Roles = "Admin")]
 	[Area("Admin")]
-	[Route("[area]/[controller]/[action]/{id?}")]
 	public class BlogController : Controller
 	{
 		private readonly HttpClient _client = HttpClientInstance.CreateClient();
+		private readonly ITokenService _tokenService;
+
+		public BlogController(IHttpClientFactory clientFactory, ITokenService tokenService)
+		{
+			_client = clientFactory.CreateClient("EduClient");
+			_tokenService=tokenService;
+		}
+
 		public async Task CategoryDropdown()
 		{
 			var categoryList = await _client.GetFromJsonAsync<List<ResultBlogCategoryDto>>("blogCategories");
@@ -45,6 +56,8 @@ namespace OnlineEdu.WebUI.Areas.Admin.Controllers
 		[HttpPost]
 		public async Task<IActionResult> CreateBlog(CreateBlogDto createBlogDto)
 		{
+			var userId = _tokenService.GetUserId;
+			createBlogDto.WriterId = userId;
 			await _client.PostAsJsonAsync("blogs", createBlogDto);
 			return RedirectToAction("Index");
 		}

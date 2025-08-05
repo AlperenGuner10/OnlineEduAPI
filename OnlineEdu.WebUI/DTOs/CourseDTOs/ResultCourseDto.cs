@@ -1,4 +1,5 @@
 ﻿using OnlineEdu.WebUI.DTOs.CourseCategoryDTOs;
+using OnlineEdu.WebUI.DTOs.UserDTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,5 +18,8 @@ namespace OnlineEdu.WebUI.DTOs.CourseDTOs
 		public ResultCourseCategoryDto Category { get; set; }
 		public decimal Price { get; set; }
 		public bool IsShown { get; set; }
+		public ResultUserDto AppUser { get; set; }
+		public int AppUserId { get; set; }
+
 	}
 }

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using OnlineEdu.Business.Abstract;
@@ -8,16 +9,20 @@ using OnlineEdu.Entity.Entities;
 
 namespace OnlineEdu.API.Controllers
 {
+	[Authorize(Roles = "Admin, Teacher, Student")]
 	[Route("api/[controller]")]
 	[ApiController]
-	public class CourseController(IGenericService<Course> _courseService, IMapper _mapper) : ControllerBase
+	public class CourseController(ICourseService _courseService, IMapper _mapper) : ControllerBase
 	{
+		[AllowAnonymous]
 		[HttpGet]
 		public IActionResult Get()
 		{
-			var values = _courseService.TGetList();
-			return Ok(values);
+			var values = _courseService.TGetAllCoursesWithCategories();
+			var courses = _mapper.Map<List<ResultCourseDto>>(values);
+			return Ok(courses);
 		}
+		[AllowAnonymous]
 		[HttpGet("{id}")]
 		public IActionResult GetById(int id)
 		{
@@ -43,6 +48,47 @@ namespace OnlineEdu.API.Controllers
 			var value = _mapper.Map<Course>(updateCourseDTO);
 			_courseService.TUpdate(value);
 			return Ok("Kurs Alanı Güncellendi");
+		}
+
+		[HttpGet("ShowOnHome/{id}")]
+		public  IActionResult ShowOnHome(int id)
+		{
+			_courseService.TShowOnHome(id);
+			return Ok("Ana Sayfada Gözüküyor.");
+		}
+		[HttpGet("DontShowOnHome/{id}")]
+		public IActionResult DontShowOnHome(int id)
+		{
+			_courseService.TDontShowOnHome(id);
+			return Ok("Ana Sayfada Gözükmüyor.");
+		}
+		[AllowAnonymous]
+		[HttpGet("GetActiveCourses")]
+		public IActionResult GetActiveCourses()
+		{
+			var values = _courseService.TGetFilteredList(x => x.IsShown==true);
+			return Ok(values);
+		}
+		[HttpGet("GetCoursesByTeacherId/{id}")]
+		public IActionResult GetCoursesByTeacherId(int id)
+		{
+			var values = _courseService.TGetCoursesByTeacherId(id);
+			var mappedValues = _mapper.Map<List<ResultCourseDto>>(values);
+			return Ok(values);
+		}
+		[AllowAnonymous]
+		[HttpGet("GetCourseCount")]
+		public IActionResult GetCourseCount()
+		{
+			var courseCount = _courseService.TCount();
+			return Ok(courseCount);
+		}
+		[AllowAnonymous]
+		[HttpGet("GetCoursesByCategoryId/{id}")]
+		public IActionResult GetCoursesByCategoryId(int id)
+		{
+			var values = _courseService.TGetAllCoursesWithCategories(x=>x.CategoryId == id);
+			return Ok(values);
 		}
 	}
 }

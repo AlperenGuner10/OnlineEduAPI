@@ -10,5 +10,9 @@ namespace OnlineEdu.Business.Abstract
 	public interface IBlogService : IGenericService<Blog>
 	{
 		List<Blog> TGetBlogsWithCategories();
+		List<Blog> TGetBlogsCategoriesByCategoryId(int id);
+		Blog TGetBlogWithCategory(int id);
+		List<Blog> TGetLastFourBlogsWithCategories();
+		List<Blog> TGetBlogsWithCategoriesByWriterId(int id);
 	}
 }

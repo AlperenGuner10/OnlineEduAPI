@@ -1,35 +1,37 @@
 ﻿@model List<ResultCourseDto>
 @{
-    ViewData["Title"] = "Kurslarım";
-    Layout = "~/Areas/Teacher/Views/TeacherLayout/_TeacherLayout.cshtml";
+	ViewData["Title"] = "Kurslarım";
+	Layout = "~/Areas/Teacher/Views/TeacherLayout/_TeacherLayout.cshtml";
 }
 
 @{
 	int count = 0;
 }
+
 <table class="table table-hover">
 	<tr>
 		<th>#</th>
 		<th>Resim</th>
 		<th>Kurs Adı</th>
-		<th>Fiyat</th>
 		<th>Kategori</th>
 		<th>İşlemler</th>
 	</tr>
 	@foreach (var item in Model)
 	{
 		count++;
-		<tr>
+		<tr>			
 			<td>@count</td>
 			<td><img src="@item.ImageUrl" style="width:75px;height:75px" /></td>
 			<td>@item.CourseName</td>
-			<td>@item.Price ₺</td>
 			<td>@item.Category.Name</td>
 			<td>
 				<button onclick="deleteTeacherCourse(@item.CourseId)" class="btn btn-outline-danger">Sil</button>
 				<br>
 				<br>
 				<a asp-action="UpdateCourse" asp-controller="MyCourse" asp-area="Teacher" asp-route-id="@item.CourseId" class="btn btn-outline-info">Güncelle</a>
+				<br>
+				<br>
+				<a asp-action="CourseVideos" asp-controller="MyCourse" asp-area="Teacher" asp-route-id="@item.CourseId" class="btn btn-outline-info">Kurs Videoları</a>
 			</td>
 		</tr>
 	}

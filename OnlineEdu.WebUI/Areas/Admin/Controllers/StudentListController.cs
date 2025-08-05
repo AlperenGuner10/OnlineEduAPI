@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using OnlineEdu.Entity.Entities;
+using OnlineEdu.WebUI.DTOs.UserDTOs;
 using System.Threading.Tasks;
 
 namespace OnlineEdu.WebUI.Areas.Admin.Controllers
@@ -10,16 +10,16 @@ namespace OnlineEdu.WebUI.Areas.Admin.Controllers
 	[Authorize(Roles = "Admin")]
 	public class StudentListController : Controller
 	{
-		private readonly UserManager<AppUser> _userManager;
+		private readonly HttpClient _httpClient;
 
-		public StudentListController(UserManager<AppUser> userManager)
+		public StudentListController(IHttpClientFactory clientFactory)
 		{
-			_userManager=userManager;
+			_httpClient=clientFactory.CreateClient("EduClient");
 		}
 
 		public async Task<IActionResult> Index()
 		{
-			var students = await _userManager.GetUsersInRoleAsync("Student");
+			var students = await _httpClient.GetFromJsonAsync<List<ResultUserDto>>("users/StudentList");
 			return View(students);
 		}
 	}

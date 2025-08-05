@@ -1,23 +1,29 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using OnlineEdu.WebUI.DTOs.SocialMediaDTOs;
 using OnlineEdu.WebUI.Helpers;
 
 namespace OnlineEdu.WebUI.Areas.Admin.Controllers
 {
+	[Authorize(Roles = "Admin")]
 	[Area("Admin")]
-	[Route("[area]/[controller]/[action]/{id?}")]
 	public class SocialMediaController : Controller
 	{
-		private readonly HttpClient _client = HttpClientInstance.CreateClient();
+		private readonly HttpClient _httpClient;
+
+		public SocialMediaController(IHttpClientFactory clientFactory)
+		{
+			_httpClient=clientFactory.CreateClient("EduClient");
+		}
 		public async Task<IActionResult> Index()
 		{
-			var values = await _client.GetFromJsonAsync<List<ResultSocialMediaDto>>("SocialMedias");
+			var values = await _httpClient.GetFromJsonAsync<List<ResultSocialMediaDto>>("SocialMedias");
 			return View(values);
 		}
 
 		public async Task<IActionResult> DeleteSocialMedia(int id)
 		{
-			await _client.DeleteAsync($"SocialMedias/{id}");
+			await _httpClient.DeleteAsync($"SocialMedias/{id}");
 			return RedirectToAction("Index");
 		}
 		[HttpGet]
@@ -28,19 +34,19 @@ namespace OnlineEdu.WebUI.Areas.Admin.Controllers
 		[HttpPost]
 		public async Task<IActionResult> CreateSocialMedia(CreateSocialMediaDto createSocialMediaDto)
 		{
-			await _client.PostAsJsonAsync("SocialMedias", createSocialMediaDto);
+			await _httpClient.PostAsJsonAsync("SocialMedias", createSocialMediaDto);
 			return RedirectToAction("Index");
 		}
 		[HttpGet]
 		public async Task<IActionResult> UpdateSocialMedia(int id)
 		{
-			var values = await _client.GetFromJsonAsync<UpdateSocialMediaDto>($"SocialMedias/{id}");
+			var values = await _httpClient.GetFromJsonAsync<UpdateSocialMediaDto>($"SocialMedias/{id}");
 			return View(values);
 		}
 		[HttpPost]
 		public async Task<IActionResult> UpdateSocialMedia(UpdateSocialMediaDto updateSocialMediaDto)
 		{
-			await _client.PutAsJsonAsync("SocialMedias", updateSocialMediaDto);
+			await _httpClient.PutAsJsonAsync("SocialMedias", updateSocialMediaDto);
 			return RedirectToAction("Index");
 		}
 	}

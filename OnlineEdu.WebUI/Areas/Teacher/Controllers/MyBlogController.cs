@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using OnlineEdu.Entity.Entities;
 using OnlineEdu.WebUI.DTOs.BlogCategoryDTOs;
 using OnlineEdu.WebUI.DTOs.BlogDTOs;
 using OnlineEdu.WebUI.Helpers;
+using OnlineEdu.WebUI.Services.TokenServices;
 using System.Threading.Tasks;
 
 namespace OnlineEdu.WebUI.Areas.Teacher.Controllers
@@ -12,18 +12,18 @@ namespace OnlineEdu.WebUI.Areas.Teacher.Controllers
 	[Area("Teacher")]
 	public class MyBlogController : Controller
 	{
-		private readonly HttpClient _httpClient = HttpClientInstance.CreateClient();
-		private readonly UserManager<AppUser> _userManager;
-
-		public MyBlogController(UserManager<AppUser> userManager)
+		private readonly HttpClient _httpClient;
+		private readonly ITokenService _tokenService;
+		public MyBlogController(IHttpClientFactory clientFactory, ITokenService tokenService)
 		{
-			_userManager=userManager;
+			_httpClient=clientFactory.CreateClient("EduClient");
+			_tokenService = tokenService;
 		}
 
 		public async Task<IActionResult> Index()
 		{
-			var user = await _userManager.FindByNameAsync(User.Identity.Name);
-			var values = await _httpClient.GetFromJsonAsync<List<ResultBlogDto>>("blogs/GetBlogByWriterId/"+user.Id);
+			var userId = _tokenService.GetUserId;
+			var values = await _httpClient.GetFromJsonAsync<List<ResultBlogDto>>("blogs/GetBlogByWriterId/"+userId);
 
 			return View(values);
 		}
@@ -50,8 +50,8 @@ namespace OnlineEdu.WebUI.Areas.Teacher.Controllers
 		[HttpPost]
 		public async Task<IActionResult> CreateBlog(CreateBlogDto createBlogDto)
 		{
-			var user = await _userManager.FindByNameAsync(User.Identity.Name);
-			createBlogDto.WriterId=user.Id;
+			var userId = _tokenService.GetUserId;
+			createBlogDto.WriterId=userId;
 			await _httpClient.PostAsJsonAsync("blogs", createBlogDto);
 			return RedirectToAction("Index");
 		}

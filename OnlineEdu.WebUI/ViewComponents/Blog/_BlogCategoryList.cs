@@ -7,7 +7,11 @@ namespace OnlineEdu.WebUI.ViewComponents.Blog
 {
 	public class _BlogCategoryList :ViewComponent
 	{
-		private readonly HttpClient _httpClient = HttpClientInstance.CreateClient();
+		private readonly HttpClient _httpClient;
+		public _BlogCategoryList(IHttpClientFactory clientFactory)
+		{
+			_httpClient=clientFactory.CreateClient("EduClient");
+		}
 		public async Task<IViewComponentResult> InvokeAsync()
 		{
 			var categoryList = await _httpClient.GetFromJsonAsync<List<ResultBlogCategoryDto>>("blogCategories");
@@ -16,7 +20,8 @@ namespace OnlineEdu.WebUI.ViewComponents.Blog
 								  select new BlogCategoryWithCountViewModel
 								  {
 									  CategoryName = blogCategory.Name,
-									  BlogCount = blogCategory.Blogs.Count
+									  BlogCount = blogCategory.Blogs.Count,
+									  BlogCategoryId = blogCategory.BlogCategoryId
 								  }).ToList();
 			return View(blogCategories);
 		}

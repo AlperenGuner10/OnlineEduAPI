@@ -2,10 +2,11 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using OnlineEdu.Entity.Entities;
 using OnlineEdu.WebUI.DTOs.CourseDTOs;
 using OnlineEdu.WebUI.DTOs.CourseRegisterDTOs;
+using OnlineEdu.WebUI.DTOs.CourseVideoDTOs;
 using OnlineEdu.WebUI.Helpers;
+using OnlineEdu.WebUI.Services.TokenServices;
 
 namespace OnlineEdu.WebUI.Areas.Student.Controllers
 {
@@ -13,18 +14,17 @@ namespace OnlineEdu.WebUI.Areas.Student.Controllers
 	[Authorize(Roles = "Student")]
 	public class CourseRegisterController : Controller
 	{
-		private readonly HttpClient _httpClient = HttpClientInstance.CreateClient();
-		private readonly UserManager<AppUser> _userManager;
-
-		public CourseRegisterController(UserManager<AppUser> userManager)
+		private readonly ITokenService _tokenService;
+		private readonly HttpClient _httpClient;
+		public CourseRegisterController(IHttpClientFactory clientFactory, ITokenService tokenService)
 		{
-			_userManager=userManager;
+			_httpClient=clientFactory.CreateClient("EduClient");
+			_tokenService = tokenService;	
 		}
-
 		public async Task<IActionResult> Index()
 		{
-			var user = await _userManager.FindByNameAsync(User.Identity.Name);
-			var values = await _httpClient.GetFromJsonAsync<List<ResultCourseRegisterDto>>("courseRegisters/GetMyCourses/"+user.Id);
+			var userId = _tokenService.GetUserId;
+			var values = await _httpClient.GetFromJsonAsync<List<ResultCourseRegisterDto>>("courseRegisters/GetMyCourses/"+userId);
 			return View(values);
 		}
 		[HttpGet]
@@ -55,8 +55,8 @@ namespace OnlineEdu.WebUI.Areas.Student.Controllers
 							   }).ToList();
 			ViewBag.courses = courses;
 
-			var user = await _userManager.FindByNameAsync(User.Identity.Name);
-			courseRegisterDto.AppUserId = user.Id;
+			var userId = _tokenService.GetUserId;
+			courseRegisterDto.AppUserId = userId;
 			var result = await _httpClient.PostAsJsonAsync("courseRegisters", courseRegisterDto);
 
 			if(result.IsSuccessStatusCode)
@@ -65,6 +65,13 @@ namespace OnlineEdu.WebUI.Areas.Student.Controllers
 			}
 
 			return View(courseRegisterDto);
+		}
+
+		public async Task<IActionResult> CourseVideos(int id)
+		{
+			var values = await _httpClient.GetFromJsonAsync<List<ResultCourseVideoDto>>("courseVideos/GetCourseVideosByCourseId/"+id);
+			ViewBag.courseName = values.Select(x => x.Course.CourseName).FirstOrDefault();
+			return View(values);
 		}
 	}
 }
